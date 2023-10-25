@@ -40,16 +40,16 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import {
     valueFormatter as vf,
     textMeasurementService as tms
-} from "powerbi-visuals-utils-formattingutils";
-import TextProperties = tms.TextProperties;
-import textMeasurementService = tms.textMeasurementService;
-import valueFormatter = vf.valueFormatter;
+} from "../node_modules/powerbi-visuals-utils-formattingutils/lib/src";
+import { TextProperties } from "../node_modules/powerbi-visuals-utils-formattingutils/lib/src/interfaces";
+import { textMeasurementService } from "powerbi-visuals-utils-formattingutils/lib/src";
+import { valueFormatter } from "../node_modules/powerbi-visuals-utils-formattingutils/lib/src";
 
 import { VisualSettings } from "./settings";
 import { Renderer } from "./renderer";
 import { RendererEditMode } from "./rendererEditMode";
 
- function visualTransform(options: VisualUpdateOptions, thisRef: Visual) : any {            
+function visualTransform(options: VisualUpdateOptions, thisRef: Visual): any {
     let dataViews = options.dataViews;
     var a = options.dataViews[0].metadata.columns[1];
 
@@ -57,29 +57,29 @@ import { RendererEditMode } from "./rendererEditMode";
 
     var tblData = [];
     thisRef.tableDefinitionFromDataset = null;
-    for( let r of dataViews[0].table.rows) {
-        var colData  = [];
-        for(var t = 0; t<r.length; t++) {
-            var rawValue =  r[t];
-            var columnName =  dataViews[0].table.columns[t].displayName;
-            if ( columnName === 'json' ) {
+    for (let r of dataViews[0].table.rows) {
+        var colData = [];
+        for (var t = 0; t < r.length; t++) {
+            var rawValue = r[t];
+            var columnName = dataViews[0].table.columns[t].displayName;
+            if (columnName === 'json') {
                 // SPecial handling of json string in dataset
                 thisRef.tableDefinitionFromDataset = rawValue;
             } else {
-                var formatString =  dataViews[0].table.columns[t].format;
+                var formatString = dataViews[0].table.columns[t].format;
                 var isColumnNumeric = dataViews[0].table.columns[t].type.numeric;
-                colData.push( { rawValue, formatString, displayName: columnName, refName: "[" + columnName + "]", isNumeric: isColumnNumeric  } );
+                colData.push({ rawValue, formatString, displayName: columnName, refName: "[" + columnName + "]", isNumeric: isColumnNumeric });
             }
         }
         var row = {
-            title : r[0],
-            name : "[" + r[0] + "]",
+            title: r[0],
+            name: "[" + r[0] + "]",
             values: colData,
         };
         tblData.push(row);
     }
     return tblData;
-}      
+}
 
 export class Visual implements IVisual {
     public target: HTMLElement;
@@ -109,35 +109,35 @@ export class Visual implements IVisual {
         return this.host;
     }
 
-    private getTableDefinition(): string  {
+    private getTableDefinition(): string {
         this.tableDefinition = null;
         var errorMsg = "";
-        if ( this.tableDefinitionFromDataset !== null && this.tableDefinitionFromDataset.length > 0  ) {
+        if (this.tableDefinitionFromDataset !== null && this.tableDefinitionFromDataset.length > 0) {
             // If a table definition is defined in the dataset, use that one.
             try {
                 this.tableDefinition = JSON.parse(this.tableDefinitionFromDataset);
             }
-            catch(e) {
+            catch (e) {
                 errorMsg = "Error parsing table definition from dataset. " + e;
             }
-        }  
+        }
         else {
-            if ( this.settings.dataPoint.tableConfiguration.trim().length > 0 ) {
+            if (this.settings.dataPoint.tableConfiguration.trim().length > 0) {
                 try {
                     this.tableDefinition = JSON.parse(this.settings.dataPoint.tableConfiguration);
                 }
-                catch(e) {
+                catch (e) {
                     errorMsg = "Error parsing table definition. Enter edit mode and correct the error.";
                 }
             }
-        }   
+        }
         return errorMsg;
     }
 
     public RenderVersionNo() {
         var a = document.createElement("div");
         a.style.display = "none";
-        a.appendChild( document.createTextNode("Version: " + this.internalVersionNo) );
+        a.appendChild(document.createTextNode("Version: " + this.internalVersionNo));
         this.target.appendChild(a);
     }
 
@@ -145,9 +145,9 @@ export class Visual implements IVisual {
         var a = document.createTextNode("ERROR: " + err);
         this.target.appendChild(a);
     }
- 
+
     public ClearAllContent() {
-        while(this.target.firstChild){
+        while (this.target.firstChild) {
             this.target.removeChild(this.target.firstChild);
         }
     }
@@ -158,7 +158,7 @@ export class Visual implements IVisual {
             this.mainUpdate(options);
             this.events.renderingFinished(options);
         }
-        catch( err ) {
+        catch (err) {
             this.events.renderingFailed(options, err);
             this.RenderErrorMessage(err);
         }
@@ -168,15 +168,15 @@ export class Visual implements IVisual {
         var w = options.viewport.width;
         var h = options.viewport.height;
         this.settings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
-        this.model  = visualTransform(options, this);
+        this.model = visualTransform(options, this);
         this.tableDefinition = null;
         var errorMsg = this.getTableDefinition();
-       
-        if ( options.editMode === 1 ) {
+
+        if (options.editMode === 1) {
             this.ClearAllContent();
             this.rendererEditMode.RenderEditMode(this.target, this.settings);
         } else {
-            if ( errorMsg.length === 0 ) {
+            if (errorMsg.length === 0) {
                 this.ClearAllContent();
                 this.renderer.RenderAllContent(this.target, this.tableDefinition);
             } else {
@@ -189,7 +189,7 @@ export class Visual implements IVisual {
         this.RenderVersionNo();
 
         this.events.renderingFinished(options);
-    }    
+    }
 
     private static parseSettings(dataView: DataView): VisualSettings {
         return VisualSettings.parse(dataView) as VisualSettings;

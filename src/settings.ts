@@ -1,6 +1,6 @@
 "use strict";
 
-import { dataViewObjectsParser } from "powerbi-visuals-utils-dataviewutils";
+import { dataViewObjectsParser } from "../node_modules/powerbi-visuals-utils-dataviewutils/lib";
 import { DataPointSettings } from "./dataPointSettings";;
 import DataViewObjectsParser = dataViewObjectsParser.DataViewObjectsParser;
 
